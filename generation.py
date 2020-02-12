@@ -19,7 +19,7 @@ def gen_task():
     print("=======================================================")
 
     with open("task_generated.txt", "w", encoding='UTF8') as f:
-        f.write("wcet duration mem_req mem_active_ratio m k")
+        f.write("wcet duration mem_req mem_active_ratio m k \n")
         for i in range(Variables.n_tasks):
             print("--------------------------")
             print(f'Task Number: {i + 1}')
@@ -34,24 +34,27 @@ def gen_task():
 def do_gen_task(input_file):
     global util_cpu_1task, mem_req_1task, util_sum_cpu, mem_req_total
 
+    k = Variables.k_min + get_rand(Variables.k_max - Variables.k_min) # k range
+    m = int(k - get_rand(k - 1))  # m range
+
     wcet = Variables.wcet_min + get_rand(Variables.wcet_max - Variables.wcet_min)
-    duration = wcet / util_cpu_1task + int(get_rand(wcet / util_cpu_1task / 2)) - int(
-        get_rand(wcet / util_cpu_1task / 2))
+
+    duration = (wcet / util_cpu_1task)* (m / k) + int(get_rand((wcet / util_cpu_1task)* (m / k) / 2)) - int(
+        get_rand((wcet / util_cpu_1task)* (m / k) / 2))
 
     mem_req = mem_req_1task + int(get_rand(mem_req_1task / 2)) - int(get_rand(mem_req_1task / 2))
     mem_active_ratio = 0.1 + get_rand(1000) / 10000.0 - get_rand(1000) / 10000.0
 
-    m = int(Variables.k - get_rand(Variables.k - 1))  # m range
-
-    util_sum_cpu += (wcet / duration) * (m / Variables.k)  # util changes
+    util_sum_cpu += (wcet/duration) * (m/k)     # util changes
 
     mem_req_total += mem_req
 
     # task parameter
-    line = f'{wcet} {format(duration, ".0f")} {format(mem_req, ".0f")} {format(mem_active_ratio, ".6f")} {m} {Variables.k} \n'
+    line = f'{wcet} {format(duration, ".0f")} {format(mem_req, ".0f")} {format(mem_active_ratio, ".6f")} {m} {k} \n'
     print(f'util_total_mem: {format(get_util_overhead_by_mem(mem_req_total), ".6f")}')
     print(f'util_total_cpu: {format(util_sum_cpu, ".6f")}')
     print(f'mem_req_total: {format(mem_req_total, ".0f")}')
+
     input_file.write(line)
 
 
